@@ -11,10 +11,10 @@ You need a recent installation of `nodejs`.
 
 ## Running
 
-Clone this repository
-Install node dependencies by running `npm install` (you only need to do this once)
-Ensure you have created a `config.yaml` configuration file (see below)
-Run `npm run reprt` to run the tool and generate the report file
+- Clone this repository
+- Install node dependencies by running `npm install` (you only need to do this once)
+- Ensure you have created a `config.yaml` configuration file (see below)
+- Run `npm run reprt` to run the tool and generate the report file
 
 The resulting report CSV file will be written to the current directort and named `report.csv`.
 
@@ -22,4 +22,26 @@ The resulting report CSV file will be written to the current directort and named
 
 A file in the top-level folder named `config.yaml` is required to configure this tool before running.
 
+Example:
 
+```
+jira:
+  projectKey: <Project Key>
+  host: <Jira Server>
+  username: <Jira Username>
+  password: <Jira Password>
+  components: <Component to filter by>
+  priorities:
+  - Blocker
+  - Crit
+  - Urgent
+  - High
+  - Medium
+  - Low
+  - Lowest
+  - Minor
+
+github:
+  token: <API Token>
+  versionPrefix: <Version prefix>
+```
