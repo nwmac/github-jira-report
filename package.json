@@ -5,12 +5,12 @@
   "main": "app.js",
   "scripts": {
     "tsc": "tsc",
-    "start": "npm run tsc && node dist/app.js",
-    "webhook": "npm run tsc && node dist/webhook.js"
+    "report": "npm run tsc && node dist/app.js"
   },
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
+    "@octokit/graphql": "^4.8.0",
     "@octokit/rest": "^18",
     "@types/node": "^8.0.28",
     "dayjs": "^1.11.0",
@@ -28,7 +28,7 @@
     "q": "^1.4.1",
     "request": "^2.81.0",
     "smee-client": "^1.1.0",
-    "validator": "^10.11.0",
+    "validator": "^10.11.0"
   },
   "engines": {
     "node": "6.x.x"

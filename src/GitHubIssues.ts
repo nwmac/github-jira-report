@@ -1,10 +1,15 @@
+import { AnyMxRecord } from "dns";
+
 const dayjs = require('dayjs');
 
 const { Octokit } = require('@octokit/rest');
+const { graphql } = require("@octokit/graphql");
 
+const GITHUB_ISSUES_REGEX = /https?:\/\/github.com\/([\d\w-_]+)\/([\d\w-_\.]+)\/issues\/(\d+)/;
 class GitHubIssues {
   config: any;
   octokit: any;
+  graphql: any;
   project: any;
   fields: any;
   users: any;
@@ -26,6 +31,105 @@ class GitHubIssues {
     this.octokit = new Octokit({
       auth: config.github.token
     });
+
+    this.graphql = graphql.defaults({
+      headers: {
+        authorization: `token ${ config.github.token }`
+      }
+    });
+  }
+
+  getGitHubProjects(issues: any[], field: string) {
+    const map = {};
+
+    issues.forEach((i) => {
+      const gh = i.fields[field];
+
+      if (gh) {
+        const matches = gh.match(GITHUB_ISSUES_REGEX);
+
+        if (matches && matches.length === 4) {
+          const owner = matches[1];
+          const repo = matches[2];
+          const slug = `${owner}/${repo}`;
+
+          if (!map[slug]) {
+            map[slug] = [];
+          }
+
+          map[slug].push(matches[3]);
+        }
+      }
+    });
+
+    return map;
+  }  
+
+  async getSpecificIssues(issues: string[], field: string) {
+    // Group the issues into owner/repo and make a graphql call for each
+
+    // Testing
+
+    const ghIssues = {};
+
+    const fetches = this.getGitHubProjects(issues, field);
+    // console.log(fetches);
+
+    const keys = Object.keys(fetches);
+
+    for (let i=0;i< keys.length; i++) {
+      const slug = keys[i];
+    
+      console.log(`Fetching GitHub issues in repository: ${slug}`);
+
+      const repo = slug.split('/');
+      let query = `{repository(owner:"${repo[0]}", name: "${repo[1]}") {\n`;
+
+      fetches[slug].forEach((number: string) => {
+        query += `issue_${number}: issue(number: ${ number }) { number,url,title,closed,milestone {title},labels(first:100) { nodes{name}} }\n`;
+      });
+
+      query += '}}';
+
+      // console.log(query);
+
+      const response = await this.graphql(query).catch((e) => {
+        if (e && e.errors) {
+          console.log('  Errors:');
+          e.errors.forEach(err => {
+            console.log(`      -> ${err.message}`);
+          });
+        }
+        return e.data;
+      });
+
+      let repos = {};
+
+      if (response && response.repository) {
+        repos = response.repository;
+      }
+
+      Object.keys(repos).forEach((key: string) => {
+        const i = repos[key];
+
+        if (i) {
+          ghIssues[i.url] = i;
+
+          if (i.milestone && i.milestone.title) {
+            i.milestone = i.milestone.title;
+          }
+
+          if (i.labels && i.labels.nodes) {
+            const labels = i.labels.nodes.map(o => o.name);
+
+            i.labels = labels;
+          }
+        }
+      });
+
+    };
+
+    return ghIssues;
   }
 
   getIssueByURL(url: string) {

@@ -24,8 +24,16 @@ class JiraProject {
   // Version cache
   public versionCache = [];
 
+  public gitHubField = '';
+
   constructor(config: any) {
     this.config = config;
+
+    if (this.config.jira && !this.config.jira.protocol) {
+      this.config.jira.protocol = 'https';
+      this.config.jira.strictSSL = true;
+    }
+    
     this.jira = new JiraApi(this.config.jira);
   }
 
@@ -56,6 +64,12 @@ class JiraProject {
 
     all.push(this.jira.listFields().then((fields) => {
       this.fields = fields;
+
+      const found = this.fields.find(f => f.name.indexOf('GitHub Issue') === 0);
+
+      if (found) {
+        this.gitHubField = found.id;
+      }
     }));
 
     if (this.config.jira.userGroup) {
@@ -199,7 +213,8 @@ class JiraProject {
     }
     // Order results
     jql += ' ORDER BY ' + dateQuery + ' ASC';
-    console.log('Getting JIRA issues - page: ' + page);
+
+    console.log('Fetching JIRA issues - page: ' + page);
 //    console.log(jql);
     return this.jira.searchJira(jql, { startAt: page * JIRA_PAGE_SIZE, maxResults: JIRA_PAGE_SIZE }).then(results => {
       if (!updated) {
