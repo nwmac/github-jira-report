@@ -1,0 +1,39 @@
+{
+  "name": "github-jira-report",
+  "version": "0.9.0",
+  "description": "GitHub-Jira Report",
+  "main": "app.js",
+  "scripts": {
+    "tsc": "tsc",
+    "start": "npm run tsc && node dist/app.js",
+    "webhook": "npm run tsc && node dist/webhook.js"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@octokit/rest": "^18",
+    "@types/node": "^8.0.28",
+    "dayjs": "^1.11.0",
+    "delete": "^0.3.2",
+    "eventsource": "^1.0.7",
+    "express": "^4.16.4",
+    "fs-extra": "^3.0.1",
+    "jira-client": "^6.7.1",
+    "js-yaml": "^3.12.1",
+    "lodash": "^4.13.1",
+    "mktemp": "^0.4.0",
+    "moment": "^2.24.0",
+    "morgan": "^1.9.1",
+    "nwm-jira-client": "github:nwmac/node-jira-client#lib",
+    "q": "^1.4.1",
+    "request": "^2.81.0",
+    "smee-client": "^1.1.0",
+    "validator": "^10.11.0",
+  },
+  "engines": {
+    "node": "6.x.x"
+  },
+  "devDependencies": {
+    "typescript": "^3.2.2"
+  }
+}
