@@ -1,5 +1,3 @@
-import { AnyMxRecord } from "dns";
-
 const dayjs = require('dayjs');
 
 const { Octokit } = require('@octokit/rest');
@@ -31,6 +29,11 @@ class GitHubIssues {
     this.octokit = new Octokit({
       auth: config.github.token
     });
+
+    if (!this.config.github.token) {
+      console.log('No GitHub token configured - you need to set one in the `config.json` file');
+      process.exit(-1);
+    }
 
     this.graphql = graphql.defaults({
       headers: {
@@ -158,11 +161,6 @@ class GitHubIssues {
     console.log('GitHub: Fetching ' + dateField + ' issues for project: ' + project);
     return this.octokit.paginate(options)
       .then(issues => {
-        // // issues is an array of all issue objects
-        // let normalized = [];
-        // issues.forEach(page => {
-        //   normalized = normalized.concat(page.items);
-        // });
         const normalized = issues;
         console.log('GitHub: Fetched ' + dateField + ' issues for project: ' + project + ' [' + normalized.length + ']');
         return normalized;

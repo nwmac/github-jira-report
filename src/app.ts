@@ -29,35 +29,65 @@ let configFileData;
 
 const START_DATE = new Date();
 
+let ALL = false;
+
+const DEFAULT_JIRA_CONFIG = {
+  "priorities": [
+    "Blocker",
+    "Crit",
+    "Urgent",
+    "High",
+    "Medium",
+    "Low",
+    "Lowest",
+    "Minor"
+  ]
+};
+
+if (process.argv.length === 3 && process.argv[2] === '-a') {
+  ALL = true;
+
+  console.log('Including all issues (+ those without linked GitHub issues)')
+}
+
 // Get document, or throw exception on error
 try {
-  configFileData = yaml.safeLoad(fs.readFileSync('config.yaml', 'utf8'));
+  configFileData = yaml.load(fs.readFileSync('config.yaml', 'utf8'));
 } catch (e) {
   console.log(e);
   process.exit(1);
 }
+
+configFileData = {
+  jira: {
+    ...DEFAULT_JIRA_CONFIG,
+    ...configFileData.jira
+  },
+  github: {
+    ...configFileData.github
+  }
+};
 
 const config = <any>configFileData;
 //console.log(JSON.stringify(config, null, 2));
 
 const CSV_FILE = `report.csv`;
 
-var jiraProject = new JiraProject(config);
+var jiraProject = new JiraProject(config, ALL);
 var github = new GitHubIssues(config);
 
 async function go() {
   await jiraProject.load(config.jira.projectKey);
   await jiraProject.getGitHubIssues(false, null, null);
 
-  console.log(`Total JIRA Issues with GH Issue link: ${jiraProject.issueCache.length}`);
+  console.log(`JIRA Issues retrieved: ${jiraProject.issueCache.length}`);
 
   // Go through all of the issues and find all of the GitHub projects that we need to fetch issues for
   const mapped = await github.getSpecificIssues(jiraProject.issueCache, jiraProject.gitHubField);
   const versionCounts = {};
 
   jiraProject.issueCache.forEach((i) => {
-    // const gh = jiraProject.getIssueField(i, 'Github Issue');
-    const gh = i.fields[jiraProject.gitHubField];
+    let gh = i.fields[jiraProject.gitHubField];
     const type = i.fields.issuetype.name;
     const fixVersions = (i.fields.fixVersions || []).map(v => v.name).join(',');
     const created = dayjs(i.fields.created);
@@ -115,6 +145,9 @@ async function go() {
       } else {
         action = 'GITHUB MISSING';
       }
+    } else {
+      gh = '';
+      action = 'ADD GITHUB';
     }
 
     addCount(versionCounts, version || '<None>', closed);

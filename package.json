@@ -12,28 +12,16 @@
   "dependencies": {
     "@octokit/graphql": "^4.8.0",
     "@octokit/rest": "^18",
-    "@types/node": "^8.0.28",
     "dayjs": "^1.11.0",
-    "delete": "^0.3.2",
-    "eventsource": "^1.0.7",
-    "express": "^4.16.4",
-    "fs-extra": "^3.0.1",
-    "jira-client": "^6.7.1",
-    "js-yaml": "^3.12.1",
-    "lodash": "^4.13.1",
-    "mktemp": "^0.4.0",
-    "moment": "^2.24.0",
-    "morgan": "^1.9.1",
-    "nwm-jira-client": "github:nwmac/node-jira-client#lib",
-    "q": "^1.4.1",
-    "request": "^2.81.0",
-    "smee-client": "^1.1.0",
-    "validator": "^10.11.0"
+    "jira-client": "^8.1.0",
+    "js-yaml": "^4.1.0",
+    "lodash": "^4.17.21"
   },
   "engines": {
-    "node": "6.x.x"
+    "node": "12.x.x"
   },
   "devDependencies": {
+    "@types/node": "^8.0.28",
     "typescript": "^3.2.2"
   }
 }

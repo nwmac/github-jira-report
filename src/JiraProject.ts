@@ -26,7 +26,7 @@ class JiraProject {
 
   public gitHubField = '';
 
-  constructor(config: any) {
+  constructor(config: any, public all = false) {
     this.config = config;
 
     if (this.config.jira && !this.config.jira.protocol) {
@@ -195,7 +195,10 @@ class JiraProject {
     const dateQuery = updated ? 'updatedDate' : 'createdDate';
 
     jql += ' AND resolution = Unresolved';
-    jql += ' and "GitHub Issue" is not EMPTY';
+
+    if (!this.all) {
+      jql += ' and "GitHub Issue" is not EMPTY';
+    }
 
     if (this.config.jira.components) {
       jql += ` AND component
