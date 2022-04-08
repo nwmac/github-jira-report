@@ -26,6 +26,8 @@ class JiraProject {
 
   public gitHubField = '';
 
+  public jiraURL = '';
+
   constructor(config: any, public all = false) {
     this.config = config;
 
@@ -35,6 +37,8 @@ class JiraProject {
     }
     
     this.jira = new JiraApi(this.config.jira);
+
+    this.jiraURL = `${config.jira.protocol}://${config.jira.host}`;
   }
 
   mapPriority(priority: string) {

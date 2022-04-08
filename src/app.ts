@@ -101,6 +101,7 @@ async function go() {
     let version = fixVersion
     let closed = false;
     let ghLabels = '';
+    const issueUrl = `${ jiraProject.jiraURL}/browse/${i.key}`;
 
     if (gh) {
       const ghIssue = mapped[gh];
@@ -145,6 +146,7 @@ async function go() {
       } else {
         action = 'GITHUB MISSING';
       }
+      gh = `"${hyperlink(gh, gh)}"`;
     } else {
       gh = '';
       action = 'ADD GITHUB';
@@ -154,7 +156,7 @@ async function go() {
 
     const state = closed ? 'Closed' : 'Open';
 
-    csv += `${ i.key },"${ i.fields.summary }",${action},${ version },"${ fixVersions }",${ghVersion},${ type },${ priority },${ pNum },"${created}","${age}",${ gh },${state},${ghMilestone},"${ ghLabels }"\n`;
+    csv += `"${hyperlink(i.key, issueUrl)}","${ i.fields.summary }",${action},${ version },"${ fixVersions }",${ghVersion},${ type },${ priority },${ pNum },"${created}","${age}",${ gh },${state},${ghMilestone},"${ ghLabels }"\n`;
   });
 
   fs.writeFileSync(CSV_FILE, csv);
@@ -200,4 +202,8 @@ function addCount(versionCounts, version, closed) {
   } else {
     versionCounts[version].closed = versionCounts[version].closed +1;
   }
+}
+
+function hyperlink(label, link) {
+  return `=HYPERLINK(""${link}"", ""${label}"\")`;
 }
