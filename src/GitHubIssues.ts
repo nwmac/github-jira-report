@@ -88,8 +88,10 @@ class GitHubIssues {
       const repo = slug.split('/');
       let query = `{repository(owner:"${repo[0]}", name: "${repo[1]}") {\n`;
 
+      const assignees = 'assignees(first:100) {edges {node {name, login}}}';
+
       fetches[slug].forEach((number: string) => {
-        query += `issue_${number}: issue(number: ${ number }) { number,url,title,closed,milestone {title},labels(first:100) { nodes{name}} }\n`;
+        query += `issue_${number}: issue(number: ${ number }) { number,url,title,closed,${assignees},milestone {title},labels(first:100) {nodes{name}} }\n`;
       });
 
       query += '}}';
@@ -133,6 +135,41 @@ class GitHubIssues {
     };
 
     return ghIssues;
+  }
+
+  getStatus(issue) {
+    if (!this.config.github.labelStatusPrefix) {
+      return issue.closed ? 'Closed' : 'Open';
+    }
+
+    for(let i=0; i<issue.labels.length; i++) {
+      const label = issue.labels[i];
+
+      if (label.indexOf(this.config.github.labelStatusPrefix) === 0) {
+        let s = label.substr(this.config.github.labelStatusPrefix.length);
+
+        if (s.length > 1) {
+          s = s.substr(0, 1).toUpperCase() + s.substr(1);
+        }
+
+        return s;
+      }
+    }
+
+    return '';
+  }
+
+  filterAssignees(assignees: any[]) {
+    const out = [];
+    const aconfig = this.config.github.assignees;
+
+    assignees.forEach(a => {
+      if (!aconfig || aconfig.includes(a.node.login)) {
+        out.push(a.node.name);
+      }
+    });
+
+    return out.join(', ');
   }
 
   getIssueByURL(url: string) {

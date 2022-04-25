@@ -23,7 +23,7 @@ console.log('===========================');
 console.log('SURE Jira <-> GitHub Report');
 console.log('===========================');
 
-let csv = 'Issue,Title,Action,Version,JIRA Versions,"GH Version",Type,Priority,P#,Created,Age,GH Issue,GH State,GH Milestone,GH Labels\n';
+let csv = '"Issue","Title","Action","Version","JIRA Versions","GH Version","GH Assignees","Type","Priority","Created","Age","GH Issue","GH State","GH Milestone","GH Labels"\n';
 
 let configFileData;
 
@@ -102,15 +102,23 @@ async function go() {
     let closed = false;
     let ghLabels = '';
     const issueUrl = `${ jiraProject.jiraURL}/browse/${i.key}`;
+    let ghAssignees = '';
+    let state = '';
 
     if (gh) {
       const ghIssue = mapped[gh];
 
       if (ghIssue) {
         closed = ghIssue.closed;
+        state = github.getStatus(ghIssue);
 
         if (ghIssue.labels) {
           ghLabels = ghIssue.labels.join(',');
+        }
+
+        if (ghIssue.assignees && ghIssue.assignees.edges) {
+          // Filter assignees to only those in the configuration
+          ghAssignees = github.filterAssignees(ghIssue.assignees.edges);
         }
 
         if (ghIssue.milestone) {
@@ -154,9 +162,8 @@ async function go() {
 
     addCount(versionCounts, version || '<None>', closed);
 
-    const state = closed ? 'Closed' : 'Open';
 
-    csv += `"${hyperlink(i.key, issueUrl)}","${ i.fields.summary }",${action},${ version },"${ fixVersions }",${ghVersion},${ type },${ priority },${ pNum },"${created}","${age}",${ gh },${state},${ghMilestone},"${ ghLabels }"\n`;
+    csv += `"${hyperlink(i.key, issueUrl)}","${ i.fields.summary }","${action}","${ version }","${ fixVersions }","${ghVersion}","${ ghAssignees }","${ type }","${ pNum } - ${ priority }","${created}","${age}",${ gh },"${state}","${ghMilestone}","${ ghLabels }"\n`;
   });
 
   fs.writeFileSync(CSV_FILE, csv);
